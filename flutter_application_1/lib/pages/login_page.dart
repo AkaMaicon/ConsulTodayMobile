@@ -1,8 +1,7 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/pages/HomePageLogged.dart';
 import 'package:flutter_application_1/pages/cadastro_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class LoginPage extends StatelessWidget {
@@ -11,6 +10,12 @@ class LoginPage extends StatelessWidget {
   final _passwordController = TextEditingController();
 
   LoginPage({super.key});
+
+  // ⬇️ Adicione este método
+  Future<void> _saveUserData(String userName) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("userName", userName);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +88,9 @@ class LoginPage extends StatelessWidget {
                       const SizedBox(height: 30),
 
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          // Salva o nome do usuário antes de navegar
+                          await _saveUserData(_usernameController.text);
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => const HomePageLogged()),
@@ -105,7 +112,7 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                       ),
-
+                    
                       const SizedBox(height: 15),
                       GestureDetector(
                         onTap: () {
@@ -114,6 +121,7 @@ class LoginPage extends StatelessWidget {
                             MaterialPageRoute(builder: (context) => CadastroPage()),
                           );
                         },
+                        
                         child: Text.rich(
                           TextSpan(
                             text: "Não tem uma conta? ",
@@ -143,6 +151,7 @@ class LoginPage extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          _menuText('Home', context),
                           _menuText('Sobre Nós', context),
                           _menuText('Ajuda', context),
                         ],

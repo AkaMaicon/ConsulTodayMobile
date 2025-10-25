@@ -11,7 +11,7 @@ rootProject.buildDir = newBuildDir.asFile
 
 subprojects {
     // Set custom build directory for subprojects
-    buildDir = "${rootProject.buildDir}/$name"
+    buildDir = rootProject.buildDir.resolve(name)
 }
 
 tasks.register<Delete>("clean") {

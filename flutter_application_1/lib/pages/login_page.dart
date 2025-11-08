@@ -1,20 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/pages/HomePageLogged.dart';
-import 'package:flutter_application_1/pages/cadastro_page.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart';
+import 'cadastro_page.dart';
+import 'HomePageLogged.dart';
 
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
-class LoginPage extends StatelessWidget {
-  final _usernameController = TextEditingController();
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final _cpfController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _senhaController = TextEditingController();
 
-  LoginPage({super.key});
+  final AuthService _authService = AuthService();
 
-  // ⬇️ Adicione este método
-  Future<void> _saveUserData(String userName) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("userName", userName);
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+
+  Future<void> _realizarLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final result = await _authService.login(
+      email: _emailController.text.trim(),
+      senha: _senhaController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (result['success'] == true) {
+      final token = result['token'];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login realizado com sucesso!')),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePageLogged()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Erro ao realizar login'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override
@@ -51,112 +93,143 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.health_and_safety, color: Colors.white, size: 32),
-                          SizedBox(width: 10),
-                          Text(
-                            "ConsulToday",
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.health_and_safety, color: Colors.white, size: 32),
+                            SizedBox(width: 10),
+                            Text(
+                              "ConsulToday",
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "Faça login",
+                          style: TextStyle(
+                            fontSize: 22,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+
+                        _buildTextField(
+                          "CPF :",
+                          _cpfController,
+                          false,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(11),
+                          ],
+                          validator: (v) =>
+                              v!.isEmpty ? 'Informe seu CPF' : null,
+                        ),
+                        const SizedBox(height: 20),
+
+                        _buildTextField(
+                          "Email :",
+                          _emailController,
+                          false,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) =>
+                              v!.isEmpty ? 'Informe seu e-mail' : null,
+                        ),
+                        const SizedBox(height: 20),
+
+                        _buildTextField(
+                          "Senha :",
+                          _senhaController,
+                          _obscurePassword,
+                          validator: (v) =>
+                              v!.isEmpty ? 'Informe sua senha' : null,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.white70,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _realizarLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        "Faça login",
-                        style: TextStyle(
-                          fontSize: 22,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-
-                      _buildTextField("CPF :", _usernameController, false),
-                      const SizedBox(height: 20),
-                      _buildTextField("Email :", _emailController, false, keyboardType: TextInputType.emailAddress),
-                      const SizedBox(height: 20),
-                      _buildTextField("Senha :", _passwordController, true),
-                      const SizedBox(height: 30),
-
-                      ElevatedButton(
-                        onPressed: () async {
-                          // Salva o nome do usuário antes de navegar
-                          await _saveUserData(_usernameController.text);
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const HomePageLogged()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 40),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                          child: Text(
+                            _isLoading ? "Entrando..." : "LOGIN",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
                           ),
                         ),
-                        child: const Text(
-                          "LOGIN",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    
-                      const SizedBox(height: 15),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => CadastroPage()),
-                          );
-                        },
-                        
-                        child: Text.rich(
-                          TextSpan(
-                            text: "Não tem uma conta? ",
-                            style: const TextStyle(color: Colors.white70),
-                            children: [
-                              TextSpan(
-                                text: "Cadastre-se",
-                                style: const TextStyle(
-                                  color: Colors.lightBlueAccent,
-                                  decoration: TextDecoration.underline,
+
+                        const SizedBox(height: 15),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CadastroPage()),
+                            );
+                          },
+                          child: Text.rich(
+                            TextSpan(
+                              text: "Não tem uma conta? ",
+                              style: const TextStyle(color: Colors.white70),
+                              children: [
+                                TextSpan(
+                                  text: "Cadastre-se",
+                                  style: const TextStyle(
+                                    color: Colors.lightBlueAccent,
+                                    decoration: TextDecoration.underline,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                      const SizedBox(height: 40),
-                      _contactInfo(Icons.phone, "+123-456-7890"),
-                      const SizedBox(height: 8),
-                      _contactInfo(Icons.language, "www.reallygreatsite.com"),
-                      const SizedBox(height: 8),
-                      _contactInfo(Icons.location_on, "123 Anywhere St., Any City"),
-                      const SizedBox(height: 30),
+                        const SizedBox(height: 40),
+                        _contactInfo(Icons.phone, "+123-456-7890"),
+                        const SizedBox(height: 8),
+                        _contactInfo(Icons.language, "www.reallygreatsite.com"),
+                        const SizedBox(height: 8),
+                        _contactInfo(Icons.location_on, "123 Anywhere St., Any City"),
+                        const SizedBox(height: 30),
 
-                      // Menu no final da página
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _menuText('Home', context),
-                          _menuText('Sobre Nós', context),
-                          _menuText('Ajuda', context),
-                        ],
-                      ),
-                    ],
+                        // Menu no final da página
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _menuText('Home', context),
+                            _menuText('Sobre Nós', context),
+                            _menuText('Ajuda', context),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -169,12 +242,6 @@ class LoginPage extends StatelessWidget {
 
   Widget _menuText(String text, BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        if (text == 'Home') {
-          
-        }
-        // Adicionar outras rotas se necessário
-      },
       child: Text(
         text,
         style: const TextStyle(
@@ -191,18 +258,24 @@ class LoginPage extends StatelessWidget {
     TextEditingController controller,
     bool obscureText, {
     TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+    Widget? suffixIcon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(color: Colors.white)),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          validator: validator,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
+            suffixIcon: suffixIcon,
             filled: true,
             fillColor: Colors.white.withOpacity(0.1),
             contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'MensagensPage.dart';
 
 class ConversasPage extends StatefulWidget {
-  const ConversasPage({Key? key}) : super(key: key);
+  const ConversasPage({super.key});
 
   @override
   State<ConversasPage> createState() => _ConversasPageState();

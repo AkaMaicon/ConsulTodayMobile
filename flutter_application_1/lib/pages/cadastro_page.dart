@@ -1,20 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../services/auth_service.dart';
+import 'login_page.dart';
 
-class CadastroPage extends StatelessWidget {
+class CadastroPage extends StatefulWidget {
+  const CadastroPage({super.key});
+
+  @override
+  State<CadastroPage> createState() => _CadastroPageState();
+}
+
+class _CadastroPageState extends State<CadastroPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
+  final _telefoneController = TextEditingController();
   final _cpfController = TextEditingController();
   final _senhaController = TextEditingController();
-  final _confirmarSenhaController = TextEditingController();
+  final _confirmaSenhaController = TextEditingController();
 
-  CadastroPage({super.key});
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
+
+  Future<void> _cadastrar() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_senhaController.text != _confirmaSenhaController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('As senhas não coincidem.')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final result = await _authService.register(
+      nome: _nomeController.text.trim(),
+      email: _emailController.text.trim(),
+      telefone: _telefoneController.text.trim(),
+      cpf: _cpfController.text.replaceAll(RegExp(r'\D'), ''),
+      senha: _senhaController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Erro ao cadastrar usuário.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Imagem fixa no topo
+          // Imagem de fundo no topo
           Container(
             height: 250,
             width: double.infinity,
@@ -41,111 +91,140 @@ class CadastroPage extends StatelessWidget {
                     ),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.health_and_safety, color: Colors.white, size: 32),
-                          SizedBox(width: 10),
-                          Text(
-                            "ConsulToday",
-                            style: TextStyle(
-                              fontSize: 32,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Logo e título
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.health_and_safety, color: Colors.white, size: 32),
+                            SizedBox(width: 10),
+                            Text(
+                              "ConsulToday",
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "CRIAR NOVA CONTA",
+                          style: TextStyle(
+                            fontSize: 22,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Campos
+                        _buildTextField("Nome completo :", _nomeController, false,
+                            keyboardType: TextInputType.name,
+                            validator: (v) => v!.isEmpty ? 'Informe seu nome' : null),
+                        const SizedBox(height: 20),
+
+                        _buildTextField("Email :", _emailController, false,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (v) => v!.isEmpty ? 'Informe seu e-mail' : null),
+                        const SizedBox(height: 20),
+
+                        _buildTextField("Telefone :", _telefoneController, false,
+                            keyboardType: TextInputType.phone,
+                            validator: (v) => v!.isEmpty ? 'Informe seu telefone' : null),
+                        const SizedBox(height: 20),
+
+                        _buildTextField("CPF :", _cpfController, false,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(11),
+                            ],
+                            validator: (v) {
+                              final digits = v!.replaceAll(RegExp(r'\D'), '');
+                              if (digits.length != 11) return 'CPF deve ter 11 dígitos';
+                              return null;
+                            }),
+                        const SizedBox(height: 20),
+
+                        _buildTextField("Senha :", _senhaController, true,
+                            validator: (v) => v!.isEmpty ? 'Informe sua senha' : null),
+                        const SizedBox(height: 20),
+
+                        _buildTextField("Confirmar Senha :", _confirmaSenhaController, true,
+                            validator: (v) => v!.isEmpty ? 'Confirme sua senha' : null),
+                        const SizedBox(height: 30),
+
+                        // Botão principal
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _cadastrar,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 14, horizontal: 40),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                          ),
+                          child: Text(
+                            _isLoading ? "Cadastrando..." : "CADASTRAR",
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              letterSpacing: 1,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        "CRIAR NOVA CONTA",
-                        style: TextStyle(
-                          fontSize: 22,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
                         ),
-                      ),
-                      const SizedBox(height: 30),
+                        const SizedBox(height: 15),
 
-                      _buildTextField("Email :", _emailController, false,
-                          keyboardType: TextInputType.emailAddress),
-                      const SizedBox(height: 20),
-
-                      _buildTextField("CPF :", _cpfController, false,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(11),
-                          ]),
-                      const SizedBox(height: 20),
-
-                      _buildTextField("Senha :", _senhaController, true),
-                      const SizedBox(height: 20),
-
-                      _buildTextField("Confirmar Senha :",
-                          _confirmarSenhaController, true),
-                      const SizedBox(height: 30),
-
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 40),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)),
-                        ),
-                        child: const Text(
-                          "CADASTRAR",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text.rich(
-                          TextSpan(
-                            text: "Já tem uma conta? ",
-                            style: const TextStyle(color: Colors.white70),
-                            children: [
-                              TextSpan(
-                                text: "Login",
-                                style: const TextStyle(
-                                  color: Colors.lightBlueAccent,
-                                  decoration: TextDecoration.underline,
+                        // Link para login
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => const LoginPage()),
+                            );
+                          },
+                          child: Text.rich(
+                            TextSpan(
+                              text: "Já tem uma conta? ",
+                              style: const TextStyle(color: Colors.white70),
+                              children: [
+                                TextSpan(
+                                  text: "Login",
+                                  style: const TextStyle(
+                                    color: Colors.lightBlueAccent,
+                                    decoration: TextDecoration.underline,
+                                  ),
                                 ),
-                              )
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 50),
 
-                      const SizedBox(height: 50),
-                      _contactInfo(Icons.phone, "+123-456-7890"),
-                      const SizedBox(height: 8),
-                      _contactInfo(Icons.language, "www.reallygreatsite.com"),
-                      const SizedBox(height: 8),
-                      _contactInfo(Icons.location_on, "123 Anywhere St., Any City"),
-                      const SizedBox(height: 30),
+                        // Informações de contato
+                        _contactInfo(Icons.phone, "+55 (11) 91234-5678"),
+                        const SizedBox(height: 8),
+                        _contactInfo(Icons.language, "www.consultoday.com"),
+                        const SizedBox(height: 8),
+                        _contactInfo(Icons.location_on, "São Paulo - SP"),
+                        const SizedBox(height: 30),
 
-                      // Menu no final da página
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _menuText('Sobre Nós', context),
-                          _menuText('Ajuda', context),
-                        ],
-                      ),
-                    ],
+                        // Rodapé / Menu
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _menuText('Sobre Nós', context),
+                            _menuText('Ajuda', context),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -153,6 +232,46 @@ class CadastroPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // =====================
+  // Widgets auxiliares
+  // =====================
+
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool obscureText, {
+    TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white)),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          validator: validator,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.1),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide.none,
+            ),
+            hintStyle: const TextStyle(color: Colors.white70),
+          ),
+        ),
+      ],
     );
   }
 
@@ -166,39 +285,6 @@ class CadastroPage extends StatelessWidget {
           shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField(
-    String label,
-    TextEditingController controller,
-    bool obscureText, {
-    TextInputType keyboardType = TextInputType.text,
-    List<TextInputFormatter>? inputFormatters,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: Colors.white)),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.1),
-            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide.none,
-            ),
-            hintStyle: const TextStyle(color: Colors.white70),
-          ),
-        ),
-      ],
     );
   }
 

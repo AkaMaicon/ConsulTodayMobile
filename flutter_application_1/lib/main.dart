@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/pages/login_page.dart';
 import 'package:flutter_application_1/pages/notification_service.dart';
-import 'package:flutter_application_1/pages/cadastro_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: CadastroPage(),
+      home: LoginPage(),
     );
   }
 }

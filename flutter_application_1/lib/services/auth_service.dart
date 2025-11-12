@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// AuthService — handles register/login with the Consultoday API.
 ///
@@ -75,8 +76,8 @@ class AuthService {
   /// Login with email and senha.
   /// Returns map: { 'success': bool, 'status': int?, 'message': String?, 'token': String?, 'data': Map? }
   Future<Map<String, dynamic>> login({
-    required String email,
-    required String senha,
+  required String email,
+  required String senha,
   }) async {
     final url = Uri.parse('$_baseUrl/auth/login');
     final body = jsonEncode({
@@ -96,7 +97,6 @@ class AuthService {
           response.body.isNotEmpty ? jsonDecode(response.body) : {};
 
       if (status == 200) {
-        // token may be wrapped as { "token": "..." }
         String? token;
         if (responseBody is Map && responseBody.containsKey('token')) {
           token = responseBody['token'];
@@ -106,6 +106,12 @@ class AuthService {
           token = responseBody['jwt'];
         } else if (responseBody is String) {
           token = responseBody;
+        }
+
+        // ✅ Salva o token no SharedPreferences
+        if (token != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
         }
 
         return {

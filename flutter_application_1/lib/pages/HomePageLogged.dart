@@ -1,10 +1,11 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/pages/AgendaPage.dart';
 import 'package:flutter_application_1/pages/HistoricoPage.dart';
-import 'package:flutter_application_1/pages/LastAppointmentPage.dart';
 import 'package:flutter_application_1/pages/MensagensPage.dart';
 import 'package:flutter_application_1/pages/PerfilPage.dart';
+import 'package:flutter_application_1/pages/AgendamentoPage.dart';
+import 'package:flutter_application_1/pages/AgendametosPage.dart';
+
 
 class HomePageLogged extends StatefulWidget {
   const HomePageLogged({super.key});
@@ -19,8 +20,8 @@ class _HomePageLoggedState extends State<HomePageLogged> {
   final List<Widget> _pages = [
     const _HomeStartPage(),
     HistoricoPage(),
-    const LastAppointmentPage(),
-    const MensagensPage(conversa: {},),
+    const AgendamentosPage(), // ✅ Adicionada aqui
+    const MensagensPage(conversa: {}),
     PerfilPage(),
   ];
 
@@ -155,11 +156,11 @@ class _HomeStartPageState extends State<_HomeStartPage> {
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AgendaPage()),
-                );
-              },
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AgendamentoPage()),
+              );
+            }
             ),
             const SizedBox(height: 24),
 

@@ -3,11 +3,10 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/models/medico_model.dart';
 import 'package:flutter_application_1/models/especialidade_model.dart';
+import '../config/api_config.dart';
 
 class ConsultaService {
-  // ATENÇÃO: Use o IP da sua máquina, não localhost.
-  // Se estiver no emulador Android, use 10.0.2.2
-  static const String _baseUrl = 'http://localhost:8080'; // Exemplo! Verifique sua porta.
+  final String baseUrl = ApiConfig.baseUrl;
 
   // O método de agendamento
   // Os parâmetros (data, idMedico etc.) dependem do que a API espera!
@@ -37,7 +36,7 @@ class ConsultaService {
     // 3. Fazer a requisição POST
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/consultas'), // Verifique o endpoint correto!
+        Uri.parse('$baseUrl/consultas'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token', // Envia o token
@@ -71,7 +70,7 @@ class ConsultaService {
     try {
       // ATENÇÃO: Confirme se o endpoint é /especialidades
       final response = await http.get(
-        Uri.parse('$_baseUrl/especialidades'),
+        Uri.parse('$baseUrl/especialidades'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -103,7 +102,7 @@ class ConsultaService {
     try {
       // ATENÇÃO: Confirme o endpoint e o nome do parâmetro (ex: "especialidadeId")
       final response = await http.get(
-        Uri.parse('$_baseUrl/medicos?especialidadeId=$especialidadeId'),
+        Uri.parse('$baseUrl/medicos?especialidadeId=$especialidadeId'),
         headers: {
           'Authorization': 'Bearer $token',
         },

@@ -2,16 +2,18 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/consulta_model.dart';
+import '../config/api_config.dart';
 
 class AgendamentoService {
-  static const String baseUrl = 'http://localhost:8080/api/consultas';
+  // ✅ Corrigido: incluir o prefixo /api/consultas
+  final String baseUrl = "${ApiConfig.baseUrl}/api/consultas";
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
 
-  /// ✅ Listar agendamentos do paciente
+  /// ✅ Listar agendamentos (consultas) do paciente autenticado
   Future<List<dynamic>> listarAgendamentos() async {
     final token = await _getToken();
 
@@ -25,12 +27,9 @@ class AgendamentoService {
 
     if (response.statusCode == 200) {
       final result = jsonDecode(response.body);
-
-      // API retorna Page, então buscamos content:
       if (result is Map && result.containsKey('content')) {
         return result['content'];
       }
-
       return [];
     }
 
@@ -51,6 +50,7 @@ class AgendamentoService {
       'especialidade': especialidade,
     });
 
+    // ✅ Endpoint correto: /api/consultas/agendar
     final response = await http.post(
       Uri.parse('$baseUrl/agendar'),
       headers: {
@@ -61,13 +61,14 @@ class AgendamentoService {
     );
 
     if (response.statusCode != 201) {
+      print("Erro ao agendar consulta: ${response.body}");
       throw Exception("Erro ao agendar: ${response.statusCode}");
     }
   }
 
+  /// ✅ Buscar histórico de consultas do paciente
   Future<List<ConsultaModel>> obterConsultas() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString("token");
+    final token = await _getToken();
 
     final response = await http.get(
       Uri.parse(baseUrl),
@@ -78,42 +79,45 @@ class AgendamentoService {
     );
 
     if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
-    final content = decoded['content'];
-    return List<ConsultaModel>.from(
-      content.map((c) => ConsultaModel.fromJson(c)),
-    );
-  } else {
-    print("Erro ao buscar histórico");
-    print("Status: ${response.statusCode}");
-    print("Body: ${response.body}");
-    throw Exception("Erro ao buscar histórico: ${response.statusCode}");
-  }
-  }
-
-  /// ✅ Cancelar agendamento (backend exige body!)
-  Future<void> cancelarAgendamento(int idAgendamento) async {
-    final token = await _getToken();
-
-    final body = jsonEncode({
-      "motivo": "Cancelado pelo paciente"
-    });
-
-    final response = await http.delete(
-      Uri.parse('$baseUrl/cancelar/$idAgendamento'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: body, // obrigatório
-    );
-
-    if (response.statusCode != 204) {
-      throw Exception("Erro ao cancelar: ${response.statusCode}");
+      final decoded = jsonDecode(response.body);
+      final content = decoded['content'];
+      return List<ConsultaModel>.from(
+        content.map((c) => ConsultaModel.fromJson(c)),
+      );
+    } else {
+      print("Erro ao buscar histórico (${response.statusCode}): ${response.body}");
+      throw Exception("Erro ao buscar histórico: ${response.statusCode}");
     }
   }
 
-    Future<List<String>> listarHorariosLivres({
+   Future<void> cancelarAgendamento(int idAgendamento) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+
+  if (token == null) throw Exception('Token não encontrado');
+
+  final url = Uri.parse('${ApiConfig.baseUrl}/api/consultas/cancelar/$idAgendamento');
+
+  final response = await http.delete(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+    // 🔹 O backend espera um corpo JSON com o motivo
+    body: jsonEncode({
+      "motivo": "Cancelado pelo paciente via aplicativo"
+    }),
+  );
+
+  if (response.statusCode != 204) {
+    print('Erro ao cancelar: ${response.statusCode} - ${response.body}');
+    throw Exception('Erro ao cancelar consulta');
+  }
+}
+
+  /// ✅ Listar horários livres de um médico
+  Future<List<String>> listarHorariosLivres({
     required int idMedico,
     required String data, // formato YYYY-MM-DD
   }) async {
@@ -129,7 +133,6 @@ class AgendamentoService {
 
     if (response.statusCode == 200) {
       final dataResponse = json.decode(response.body);
-
       if (dataResponse is List) {
         return dataResponse.cast<String>();
       }

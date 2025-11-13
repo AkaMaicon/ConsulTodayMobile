@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 
-/// ApiClient centraliza todas as requisições autenticadas à API Java.
-/// Ele adiciona automaticamente o token JWT no header Authorization.
 class ApiClient {
-  static const String _baseUrl = 'http://localhost:8080'; // endereço do backend
+  static String get _baseUrl => ApiConfig.baseUrl;
   final http.Client _client = http.Client();
 
   /// Retorna o token armazenado localmente, se existir

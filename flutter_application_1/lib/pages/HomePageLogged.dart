@@ -5,7 +5,9 @@ import 'package:flutter_application_1/pages/MensagensPage.dart';
 import 'package:flutter_application_1/pages/PerfilPage.dart';
 import 'package:flutter_application_1/pages/AgendamentoPage.dart';
 import 'package:flutter_application_1/pages/AgendametosPage.dart';
-
+import 'package:flutter_application_1/services/usuario_service.dart';
+import 'package:flutter_application_1/services/agendamento_service.dart';
+import 'package:flutter_application_1/pages/DetalhesAgendamentoPage.dart';
 
 class HomePageLogged extends StatefulWidget {
   const HomePageLogged({super.key});
@@ -16,14 +18,60 @@ class HomePageLogged extends StatefulWidget {
 
 class _HomePageLoggedState extends State<HomePageLogged> {
   int _selectedIndex = 0;
+  String nomeUsuario = 'Usuário';
+  bool carregandoUsuario = true;
+  Map<String, dynamic>? proximaConsulta;
+  bool carregandoConsulta = true;
 
-  final List<Widget> _pages = [
-    const _HomeStartPage(),
-    HistoricoPage(),
-    const AgendamentosPage(), // ✅ Adicionada aqui
-    const MensagensPage(conversa: {}),
-    PerfilPage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _carregarUsuario();
+    _carregarProximaConsulta();
+  }
+
+  Future<void> _carregarUsuario() async {
+    try {
+      final usuarioData = await UsuarioService().obterUsuario();
+      if (mounted) {
+        setState(() {
+          nomeUsuario = usuarioData['nome'] ?? 'Usuário';
+          carregandoUsuario = false;
+        });
+      }
+    } catch (e) {
+      print('Erro ao carregar usuário: $e');
+      if (mounted) {
+        setState(() {
+          carregandoUsuario = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _carregarProximaConsulta() async {
+    try {
+      final agendamentos = await AgendamentoService().listarAgendamentos();
+      if (mounted) {
+        // Filtra apenas consultas futuras e não canceladas
+        agendamentos.removeWhere((ag) => ag['status'] == 'CANCELADO');
+        agendamentos.sort((a, b) => DateTime.parse(a['dataHora'])
+            .compareTo(DateTime.parse(b['dataHora'])));
+        setState(() {
+          proximaConsulta =
+              agendamentos.isNotEmpty ? agendamentos.first : null;
+          carregandoConsulta = false;
+        });
+      }
+    } catch (e) {
+      print('Erro ao carregar próxima consulta: $e');
+      if (mounted) {
+        setState(() {
+          carregandoConsulta = false;
+        });
+      }
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -33,8 +81,21 @@ class _HomePageLoggedState extends State<HomePageLogged> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      _HomeStartPage(
+        nomeUsuario: nomeUsuario,
+        carregandoUsuario: carregandoUsuario,
+        proximaConsulta: proximaConsulta,
+        carregandoConsulta: carregandoConsulta,
+      ),
+      HistoricoPage(),
+      const AgendamentosPage(),
+      const MensagensPage(conversa: {}),
+      PerfilPage(),
+    ];
+
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -42,7 +103,6 @@ class _HomePageLoggedState extends State<HomePageLogged> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Início"),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: "Consultas"),
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "Agendamentos"),
           BottomNavigationBarItem(icon: Icon(Icons.message), label: "Mensagens"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
@@ -52,36 +112,34 @@ class _HomePageLoggedState extends State<HomePageLogged> {
   }
 }
 
-/// Página inicial com dica de saúde dinâmica
-class _HomeStartPage extends StatefulWidget {
-  const _HomeStartPage();
+/// Página inicial agora recebe o nome do usuário e a próxima consulta
+class _HomeStartPage extends StatelessWidget {
+  final String nomeUsuario;
+  final bool carregandoUsuario;
+  final Map<String, dynamic>? proximaConsulta;
+  final bool carregandoConsulta;
 
-  @override
-  State<_HomeStartPage> createState() => _HomeStartPageState();
-}
-
-class _HomeStartPageState extends State<_HomeStartPage> {
-  final String nomeUsuario = 'Usuario'; // pode vir do backend
-  final List<String> dicasSaude = [
-    'Beba pelo menos 2 litros de água por dia para manter-se hidratado!',
-    'Durma ao menos 7-8 horas por noite para melhorar sua saúde.',
-    'Pratique atividade física regularmente, mesmo que leve!',
-    'Mantenha uma alimentação equilibrada com frutas e verduras.',
-    'Lave bem as mãos para evitar transmissão de doenças.',
-    'Evite excesso de açúcar e alimentos ultraprocessados.',
-  ];
-
-  late String dicaEscolhida;
-
-  @override
-  void initState() {
-    super.initState();
-    // sorteia dica ao abrir a página
-    dicaEscolhida = dicasSaude[Random().nextInt(dicasSaude.length)];
-  }
+  const _HomeStartPage({
+    super.key,
+    required this.nomeUsuario,
+    required this.carregandoUsuario,
+    this.proximaConsulta,
+    required this.carregandoConsulta,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final List<String> dicasSaude = [
+      'Beba pelo menos 2 litros de água por dia para manter-se hidratado!',
+      'Durma ao menos 7-8 horas por noite para melhorar sua saúde.',
+      'Pratique atividade física regularmente, mesmo que leve!',
+      'Mantenha uma alimentação equilibrada com frutas e verduras.',
+      'Lave bem as mãos para evitar transmissão de doenças.',
+      'Evite excesso de açúcar e alimentos ultraprocessados.',
+    ];
+
+    final String dicaEscolhida = dicasSaude[Random().nextInt(dicasSaude.length)];
+
     return Scaffold(
       backgroundColor: Colors.blue.shade50,
       appBar: AppBar(
@@ -90,14 +148,13 @@ class _HomeStartPageState extends State<_HomeStartPage> {
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Card de boas-vindas
             Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               color: Colors.blueAccent,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -106,18 +163,27 @@ class _HomeStartPageState extends State<_HomeStartPage> {
                     const CircleAvatar(
                       radius: 28,
                       backgroundColor: Colors.white,
-                      child: Icon(Icons.person,
-                          color: Colors.blueAccent, size: 30),
+                      child: Icon(Icons.person, color: Colors.blueAccent, size: 30),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: Text(
-                        'Olá, $nomeUsuario!\nSeja bem-vindo ao ConsulToday',
-                        style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                      ),
+                      child: carregandoUsuario
+                          ? const SizedBox(
+                              height: 40,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              'Olá, $nomeUsuario!\nSeja bem-vindo ao ConsulToday',
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
                     ),
                   ],
                 ),
@@ -143,8 +209,7 @@ class _HomeStartPageState extends State<_HomeStartPage> {
             // Botão agendar nova consulta
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 backgroundColor: Colors.blue,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -156,40 +221,49 @@ class _HomeStartPageState extends State<_HomeStartPage> {
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AgendamentoPage()),
-              );
-            }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AgendamentoPage()),
+                );
+              },
             ),
             const SizedBox(height: 24),
 
-            // Próxima consulta
-            Text('Sua próxima consulta',
-                style: Theme.of(context).textTheme.titleMedium),
+            // Próxima consulta dinâmica
+            Text('Sua próxima consulta', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 2,
-              child: ListTile(
-                leading:
-                    const Icon(Icons.local_hospital, color: Colors.blueAccent),
-                title: const Text('Cardiologia - Dr. João Silva'),
-                subtitle: const Text('10/10/2025 14:00'),
-                trailing: TextButton(
-                  child: const Text('Ver detalhes'),
-                  onPressed: () {
-                    // navegar para detalhes
-                  },
-                ),
-              ),
-            ),
+            carregandoConsulta
+                ? const Center(child: CircularProgressIndicator())
+                : proximaConsulta == null
+                    ? const Text('Nenhuma consulta agendada')
+                    : Card(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 2,
+                        child: ListTile(
+                          leading: const Icon(Icons.local_hospital, color: Colors.blueAccent),
+                          title: Text(
+                              '${proximaConsulta!['nomeMedico'] ?? 'Dr(a). ???'}'),
+                          subtitle: Text(
+                              '${proximaConsulta!['dataHora'] != null ? DateTime.parse(proximaConsulta!['dataHora']).toLocal().toString().substring(0,16) : 'Data não disponível'}'),
+                          trailing: TextButton(
+                              child: const Text('Ver detalhes'),
+                              onPressed: () {
+                                if (proximaConsulta != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => DetalhesAgendamentoPage(agendamento: proximaConsulta!),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                        ),
+                      ),
             const SizedBox(height: 24),
 
             // Especialidades populares
-            Text('Especialidades populares',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text('Especialidades populares', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             GridView.count(
               crossAxisCount: 3,
@@ -207,12 +281,10 @@ class _HomeStartPageState extends State<_HomeStartPage> {
             const SizedBox(height: 24),
 
             // Dica de saúde dinâmica
-            Text('Dica de saúde do dia',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text('Dica de saúde do dia', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 2,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -222,7 +294,7 @@ class _HomeStartPageState extends State<_HomeStartPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        dicaEscolhida,
+                        dicasSaude[Random().nextInt(dicasSaude.length)],
                         style: TextStyle(color: Colors.grey[800]),
                       ),
                     ),

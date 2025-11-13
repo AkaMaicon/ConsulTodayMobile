@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/agendamento_service.dart';
 import 'package:intl/intl.dart';
+import 'DetalhesAgendamentoPage.dart';
 
 class AgendamentosPage extends StatefulWidget {
   const AgendamentosPage({super.key});
@@ -48,7 +49,7 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Consulta cancelada com sucesso!')),
       );
-      _carregarAgendamentos();
+      await _carregarAgendamentos(); // Atualiza a lista após cancelar
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao cancelar: $e')),
@@ -56,31 +57,122 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
     }
   }
 
+  Future<void> _confirmarCancelamento(int idAgendamento) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar consulta'),
+        content: const Text('Tem certeza que deseja cancelar esta consulta?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Não'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sim'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      _cancelarConsulta(idAgendamento);
+    }
+  }
+
+  Widget _buildItem(Map ag, {bool cancelado = false}) {
+    final nomeMedico = ag['nomeMedico'] ?? '---';
+    final dataHora = _formatarData(ag['dataHora'] ?? '');
+    return Card(
+      margin: const EdgeInsets.all(8),
+      color: cancelado ? Colors.red.shade50 : Colors.white,
+      child: ListTile(
+        title: Text(
+          'Dr(a). $nomeMedico',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: cancelado ? Colors.red : Colors.black,
+          ),
+        ),
+        subtitle: Text(dataHora),
+        trailing: cancelado
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.cancel, color: Colors.red),
+                tooltip: 'Cancelar consulta',
+                onPressed: () => _confirmarCancelamento(ag['idAgendamento']),
+              ),
+        onTap: () {
+          Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => DetalhesAgendamentoPage(agendamento: ag),
+    ),
+    );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_busy, size: 80, color: Colors.grey.shade400),
+            const SizedBox(height: 20),
+            const Text(
+              'Nenhuma consulta agendada',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Agende uma nova consulta e ela aparecerá aqui.',
+              style: TextStyle(color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ativas = _agendamentos.where((a) => a['status'] != 'CANCELADO').toList();
+    final canceladas = _agendamentos.where((a) => a['status'] == 'CANCELADO').toList();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Minhas Consultas')),
       body: _carregando
           ? const Center(child: CircularProgressIndicator())
-          : _agendamentos.isEmpty
-              ? const Center(child: Text('Nenhuma consulta agendada'))
-              : ListView.builder(
-                  itemCount: _agendamentos.length,
-                  itemBuilder: (context, index) {
-                    final ag = _agendamentos[index];
-                    return Card(
-                      margin: const EdgeInsets.all(8),
-                      child: ListTile(
-                        title: Text('Médico: ${ag['medicoNome'] ?? '---'}'),
-                        subtitle: Text('Data: ${_formatarData(ag['dataHora'] ?? '')}'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.cancel),
-                          onPressed: () => _cancelarConsulta(ag['id']),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+          : RefreshIndicator(
+              onRefresh: _carregarAgendamentos,
+              child: ListView(
+                children: [
+                  if (ativas.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Consultas Ativas',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    ),
+                    ...ativas.map((ag) => _buildItem(ag)).toList(),
+                  ],
+                  if (canceladas.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Consultas Canceladas',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
+                    ),
+                    ...canceladas.map((ag) => _buildItem(ag, cancelado: true)).toList(),
+                  ],
+                  if (_agendamentos.isEmpty) _buildEmptyState(),
+                ],
+              ),
+            ),
     );
   }
 }

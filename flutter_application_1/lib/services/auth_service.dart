@@ -1,16 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 
-/// AuthService — handles register/login with the Consultoday API.
-///
-/// Notes:
-/// - Default baseUrl uses 10.0.2.2 for Android emulator to reach host machine.
-///   * If you're testing on a real device, replace with your machine IP (e.g. http://192.168.1.10:8080)
-///   * If you're using iOS simulator, `http://localhost:8080` works.
 class AuthService {
-  /// Change this if running on a real device or different environment.
-  static const String _baseUrl = 'http://localhost:8080';
+  final String baseUrl = ApiConfig.baseUrl;
 
   /// Register a new paciente.
   /// Returns map: { 'success': bool, 'status': int?, 'message': String?, 'data': Map? }
@@ -21,7 +15,7 @@ class AuthService {
     required String telefone,
     required String cpf,
   }) async {
-    final url = Uri.parse('$_baseUrl/api/pacientes/cadastrar');
+    final url = Uri.parse('$baseUrl/api/pacientes/cadastrar');
     final body = jsonEncode({
       'nome': nome,
       'email': email,
@@ -79,7 +73,7 @@ class AuthService {
   required String email,
   required String senha,
   }) async {
-    final url = Uri.parse('$_baseUrl/auth/login');
+    final url = Uri.parse('$baseUrl/auth/login');
     final body = jsonEncode({
       'email': email,
       'senha': senha,

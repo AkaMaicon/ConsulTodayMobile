@@ -136,6 +136,10 @@ class _CadastroPageState extends State<CadastroPage> {
 
                         _buildTextField("Telefone :", _telefoneController, false,
                             keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(11),
+                            ],
                             validator: (v) => v!.isEmpty ? 'Informe seu telefone' : null),
                         const SizedBox(height: 20),
 

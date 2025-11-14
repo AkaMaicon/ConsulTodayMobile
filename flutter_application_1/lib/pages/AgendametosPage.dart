@@ -46,14 +46,31 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
   Future<void> _cancelarConsulta(int idAgendamento) async {
     try {
       await AgendamentoService().cancelarAgendamento(idAgendamento);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Consulta cancelada com sucesso!')),
+        const SnackBar(
+          content: Text('Consulta cancelada com sucesso!'),
+          backgroundColor: Colors.green,
+        ),
       );
+
       await _carregarAgendamentos();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao cancelar: $e')),
-      );
+String msg = e.toString();
+
+  if (msg.contains("O cancelamento deve ser feito com no minimo 24 horas")) {
+    _mostrarPopup(
+      context,
+      "Cancelamento não permitido",
+      "O cancelamento deve ser feito com no mínimo 24 horas de antecedência.",
+    );
+  } else {
+    _mostrarPopup(
+      context,
+      "Erro ao cancelar",
+      "O cancelamento deve ser feito com no mínimo 24 horas de antecedência.",
+    );
+      }
     }
   }
 
@@ -168,15 +185,11 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
 
     return Scaffold(
       backgroundColor: Colors.blue.shade50,
-
       appBar: AppBar(
-        title: const Text(
-          'Minhas Consultas',
-        ),
+        title: const Text('Minhas Consultas'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-
       body: _carregando
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -184,7 +197,6 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
               child: ListView(
                 physics: const BouncingScrollPhysics(),
                 children: [
-                  // ATIVAS
                   if (ativas.isNotEmpty) ...[
                     const Padding(
                       padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -199,8 +211,6 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
                     ),
                     ...ativas.map((ag) => _buildItem(ag)).toList(),
                   ],
-
-                  // CANCELADAS
                   if (canceladas.isNotEmpty) ...[
                     const Padding(
                       padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -213,16 +223,39 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
                         ),
                       ),
                     ),
-                    ...canceladas
-                        .map((ag) => _buildItem(ag, cancelado: true))
-                        .toList(),
+                    ...canceladas.map((ag) => _buildItem(ag, cancelado: true)).toList(),
                   ],
-
                   if (_agendamentos.isEmpty) _buildEmptyState(),
                   const SizedBox(height: 30),
                 ],
               ),
             ),
+    );
+  }
+
+  // ----------------------------------------------------------------------
+  // POPUP PERSONALIZADO PARA ERROS
+  // ----------------------------------------------------------------------
+  void _mostrarPopup(BuildContext context, String titulo, String mensagem) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          titulo,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.blue,
+          ),
+        ),
+        content: Text(mensagem),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
     );
   }
 }

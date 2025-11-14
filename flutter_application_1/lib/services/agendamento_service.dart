@@ -90,13 +90,12 @@ class AgendamentoService {
     }
   }
 
-   Future<void> cancelarAgendamento(int idAgendamento) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token');
-
+Future<void> cancelarAgendamento(int idAgendamento) async {
+  final token = await _getToken();
   if (token == null) throw Exception('Token não encontrado');
 
-  final url = Uri.parse('${ApiConfig.baseUrl}/api/consultas/cancelar/$idAgendamento');
+  final url = Uri.parse(
+      '${ApiConfig.baseUrl}/api/consultas/cancelar/$idAgendamento');
 
   final response = await http.delete(
     url,
@@ -104,15 +103,17 @@ class AgendamentoService {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     },
-    // 🔹 O backend espera um corpo JSON com o motivo
     body: jsonEncode({
       "motivo": "Cancelado pelo paciente via aplicativo"
     }),
   );
 
+  print("STATUS: ${response.statusCode}");
+  print("BODY: ${response.body}");
+
   if (response.statusCode != 204) {
-    print('Erro ao cancelar: ${response.statusCode} - ${response.body}');
-    throw Exception('Erro ao cancelar consulta');
+    throw Exception(
+        "Erro ao cancelar consulta: ${response.statusCode} ${response.body}");
   }
 }
 

@@ -6,6 +6,20 @@ import '../config/api_config.dart';
 class AuthService {
   final String baseUrl = ApiConfig.baseUrl;
 
+  String? extractEmailFromJwt(String token) {
+  try {
+    final parts = token.split('.');
+    if (parts.length != 3) return null;
+
+    final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+    final data = jsonDecode(payload);
+
+    return data["sub"];
+  } catch (e) {
+    print("Erro ao decodificar JWT: $e");
+    return null;
+  }
+}
   /// Register a new paciente.
   /// Returns map: { 'success': bool, 'status': int?, 'message': String?, 'data': Map? }
   Future<Map<String, dynamic>> register({
@@ -89,6 +103,42 @@ class AuthService {
       final status = response.statusCode;
       final responseBody =
           response.body.isNotEmpty ? jsonDecode(response.body) : {};
+      print("🌐 LOGIN RESPONSE: ${response.body}");
+
+
+      if (responseBody is Map) {
+        final prefs = await SharedPreferences.getInstance();
+
+        // Procurar direto no root
+        String? name = responseBody['nome'];
+        String? email = responseBody['email'];
+
+        // Procurar dentro de usuario
+        if (responseBody['usuario'] is Map) {
+          name ??= responseBody['usuario']['nome'];
+          email ??= responseBody['usuario']['email'];
+        }
+
+        // Procurar dentro de paciente
+        if (responseBody['paciente'] is Map) {
+          name ??= responseBody['paciente']['nome'];
+          email ??= responseBody['paciente']['email'];
+        }
+
+        // Procurar dentro de data
+        if (responseBody['data'] is Map) {
+          name ??= responseBody['data']['nome'];
+          email ??= responseBody['data']['email'];
+        }
+
+        // Salvar se achou
+        if (name != null) await prefs.setString('user_name', name);
+        if (email != null) await prefs.setString('user_email', email);
+
+        if (responseBody.containsKey('id')) {
+          await prefs.setInt('user_id', responseBody['id']);
+        }
+      }
 
       if (status == 200) {
         String? token;
@@ -101,6 +151,16 @@ class AuthService {
         } else if (responseBody is String) {
           token = responseBody;
         }
+
+        if (token != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+
+        final extractedEmail = extractEmailFromJwt(token);
+        if (extractedEmail != null) {
+          await prefs.setString('user_email', extractedEmail);
+        }
+      }
 
         // ✅ Salva o token no SharedPreferences
         if (token != null) {
@@ -127,6 +187,7 @@ class AuthService {
           'message': 'Erro ao autenticar (status $status).'
         };
       }
+      
     } catch (e) {
       print('Erro no AuthService.login: $e');
       return {

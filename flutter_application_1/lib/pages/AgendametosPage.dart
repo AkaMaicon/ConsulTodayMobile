@@ -49,7 +49,7 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Consulta cancelada com sucesso!')),
       );
-      await _carregarAgendamentos(); // Atualiza a lista após cancelar
+      await _carregarAgendamentos();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao cancelar: $e')),
@@ -84,18 +84,41 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
   Widget _buildItem(Map ag, {bool cancelado = false}) {
     final nomeMedico = ag['nomeMedico'] ?? '---';
     final dataHora = _formatarData(ag['dataHora'] ?? '');
-    return Card(
-      margin: const EdgeInsets.all(8),
-      color: cancelado ? Colors.red.shade50 : Colors.white,
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: cancelado ? Colors.red.shade50 : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         title: Text(
           'Dr(a). $nomeMedico',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: cancelado ? Colors.red : Colors.black,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: cancelado ? Colors.red.shade700 : Colors.black87,
           ),
         ),
-        subtitle: Text(dataHora),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6.0),
+          child: Text(
+            dataHora,
+            style: TextStyle(
+              fontSize: 14,
+              color: cancelado ? Colors.red.shade300 : Colors.black54,
+            ),
+          ),
+        ),
         trailing: cancelado
             ? null
             : IconButton(
@@ -103,14 +126,12 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
                 tooltip: 'Cancelar consulta',
                 onPressed: () => _confirmarCancelamento(ag['idAgendamento']),
               ),
-        onTap: () {
-          Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => DetalhesAgendamentoPage(agendamento: ag),
-    ),
-    );
-        },
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetalhesAgendamentoPage(agendamento: ag),
+          ),
+        ),
       ),
     );
   }
@@ -131,7 +152,7 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
             const SizedBox(height: 10),
             Text(
               'Agende uma nova consulta e ela aparecerá aqui.',
-              style: TextStyle(color: Colors.grey.shade600),
+              style: TextStyle(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
           ],
@@ -146,30 +167,59 @@ class _AgendamentosPageState extends State<AgendamentosPage> {
     final canceladas = _agendamentos.where((a) => a['status'] == 'CANCELADO').toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Minhas Consultas')),
+      backgroundColor: Colors.blue.shade50,
+
+      appBar: AppBar(
+        title: const Text(
+          'Minhas Consultas',
+        ),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+
       body: _carregando
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _carregarAgendamentos,
               child: ListView(
+                physics: const BouncingScrollPhysics(),
                 children: [
+                  // ATIVAS
                   if (ativas.isNotEmpty) ...[
                     const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Consultas Ativas',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+                      child: Text(
+                        'Consultas Ativas',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ),
                     ...ativas.map((ag) => _buildItem(ag)).toList(),
                   ],
+
+                  // CANCELADAS
                   if (canceladas.isNotEmpty) ...[
                     const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Consultas Canceladas',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+                      child: Text(
+                        'Consultas Canceladas',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
                     ),
-                    ...canceladas.map((ag) => _buildItem(ag, cancelado: true)).toList(),
+                    ...canceladas
+                        .map((ag) => _buildItem(ag, cancelado: true))
+                        .toList(),
                   ],
+
                   if (_agendamentos.isEmpty) _buildEmptyState(),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),

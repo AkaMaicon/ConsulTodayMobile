@@ -8,6 +8,7 @@ import 'package:flutter_application_1/pages/AgendametosPage.dart';
 import 'package:flutter_application_1/services/usuario_service.dart';
 import 'package:flutter_application_1/services/agendamento_service.dart';
 import 'package:flutter_application_1/pages/DetalhesAgendamentoPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePageLogged extends StatefulWidget {
   const HomePageLogged({super.key});
@@ -31,23 +32,26 @@ class _HomePageLoggedState extends State<HomePageLogged> {
   }
 
   Future<void> _carregarUsuario() async {
-    try {
-      final usuarioData = await UsuarioService().obterUsuario();
-      if (mounted) {
-        setState(() {
-          nomeUsuario = usuarioData['nome'] ?? 'Usuário';
-          carregandoUsuario = false;
-        });
-      }
-    } catch (e) {
-      print('Erro ao carregar usuário: $e');
-      if (mounted) {
-        setState(() {
-          carregandoUsuario = false;
-        });
-      }
+  try {
+    final prefs = await SharedPreferences.getInstance();
+
+    final nome = prefs.getString('user_name');
+
+    if (mounted) {
+      setState(() {
+        nomeUsuario = nome ?? 'Usuário';
+        carregandoUsuario = false;
+      });
+    }
+  } catch (e) {
+    print('Erro ao carregar usuário: $e');
+    if (mounted) {
+      setState(() {
+        carregandoUsuario = false;
+      });
     }
   }
+}
 
   Future<void> _carregarProximaConsulta() async {
     try {

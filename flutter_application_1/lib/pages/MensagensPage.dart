@@ -16,12 +16,13 @@ class _MensagensPageState extends State<MensagensPage> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late List<Map<String, dynamic>> mensagens;
-  bool _digitando = false; // 👈 indicador de digitando
+  bool _digitando = false;
 
   @override
   void initState() {
     super.initState();
     mensagens = [];
+
     if (widget.conversa["mensagens"] is List) {
       for (var m in widget.conversa["mensagens"]) {
         mensagens.add({
@@ -35,8 +36,10 @@ class _MensagensPageState extends State<MensagensPage> {
 
   Future<void> _salvarMensagens() async {
     final prefs = await SharedPreferences.getInstance();
-    final conversas =
-        List<Map<String, dynamic>>.from(jsonDecode(prefs.getString("conversas") ?? "[]"));
+    final conversas = List<Map<String, dynamic>>.from(
+      jsonDecode(prefs.getString("conversas") ?? "[]"),
+    );
+
     final index = conversas.indexWhere((c) => c["id"] == widget.conversa["id"]);
     if (index != -1) {
       conversas[index]["mensagens"] = mensagens;
@@ -46,6 +49,7 @@ class _MensagensPageState extends State<MensagensPage> {
 
   void _enviarMensagem(String texto) {
     if (texto.trim().isEmpty) return;
+
     final novaMensagem = {
       "texto": texto.trim(),
       "remetente": "usuario",
@@ -54,16 +58,17 @@ class _MensagensPageState extends State<MensagensPage> {
 
     setState(() {
       mensagens.add(novaMensagem);
-      _digitando = true; // 👈 ativa "digitando..."
+      _digitando = true;
     });
+
     _controller.clear();
     _salvarMensagens();
     _scrollAteFim();
 
-    // Resposta automática (teste)
+    // Resposta automática de teste
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
-        _digitando = false; // 👈 desativa antes da resposta
+        _digitando = false;
         mensagens.add({
           "texto": "Olá, precisa de ajuda?",
           "remetente": "medico",
@@ -99,23 +104,25 @@ class _MensagensPageState extends State<MensagensPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
         title: Row(
           children: [
             CircleAvatar(
               backgroundColor: Colors.grey.shade300,
-              child: Icon(Icons.person, color: Colors.grey.shade700),
+              child: const Icon(Icons.person, color: Colors.black54),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Text(
               widget.conversa["nome"] ?? "Dr. João Silva",
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                color: Color.fromARGB(221, 255, 255, 255),
+              ),
             ),
           ],
         ),
-        backgroundColor: Colors.blue,
-        elevation: 0,
       ),
       body: Column(
         children: [
@@ -123,29 +130,22 @@ class _MensagensPageState extends State<MensagensPage> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(12),
-              itemCount: mensagens.length + (_digitando ? 1 : 0), // 👈 adiciona 1 se digitando
+              itemCount: mensagens.length + (_digitando ? 1 : 0),
               itemBuilder: (_, i) {
                 if (_digitando && i == mensagens.length) {
-                  // Widget de "digitando..."
                   return Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
+                          horizontal: 14, vertical: 12),
+                      margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(18),
-                          topRight: Radius.circular(18),
-                          bottomRight: Radius.circular(18),
-                          bottomLeft: Radius.circular(4),
-                        ),
+                        borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
-                            offset: const Offset(2, 2),
+                            color: Colors.black12.withOpacity(0.05),
+                            blurRadius: 6,
                           ),
                         ],
                       ),
@@ -153,7 +153,6 @@ class _MensagensPageState extends State<MensagensPage> {
                         "Digitando...",
                         style: TextStyle(
                           color: Colors.grey,
-                          fontSize: 13,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -163,43 +162,42 @@ class _MensagensPageState extends State<MensagensPage> {
 
                 final msg = mensagens[i];
                 final isUsuario = msg["remetente"] == "usuario";
-                final hora = _formatarHora(msg["hora"] ?? "");
+                final hora = _formatarHora(msg["hora"]);
 
                 return Align(
-                  alignment: isUsuario
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
+                  alignment:
+                      isUsuario ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
+                        horizontal: 14, vertical: 12),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
                     constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                      maxWidth: MediaQuery.of(context).size.width * 0.78,
                     ),
                     decoration: BoxDecoration(
                       color: isUsuario
-                          ? Colors.blue
+                          ? const Color(0xFF1E88E5)
                           : Colors.white,
                       borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(18),
-                        topRight: const Radius.circular(18),
-                        bottomLeft: Radius.circular(isUsuario ? 18 : 4),
-                        bottomRight: Radius.circular(isUsuario ? 4 : 18),
+                        topLeft: const Radius.circular(20),
+                        topRight: const Radius.circular(20),
+                        bottomLeft:
+                            Radius.circular(isUsuario ? 20 : 5),
+                        bottomRight:
+                            Radius.circular(isUsuario ? 5 : 20),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 4,
-                          offset: const Offset(2, 2),
+                          color: Colors.black12.withOpacity(0.05),
+                          blurRadius: 6,
                         ),
                       ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          (msg["texto"] ?? "").toString(),
+                          msg["texto"],
                           style: TextStyle(
                             color: isUsuario ? Colors.white : Colors.black87,
                             fontSize: 15,
@@ -222,10 +220,18 @@ class _MensagensPageState extends State<MensagensPage> {
               },
             ),
           ),
+
+          /// Campo de mensagem
           SafeArea(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              color: Colors.white,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: Colors.black12, width: 0.2),
+                ),
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -233,10 +239,10 @@ class _MensagensPageState extends State<MensagensPage> {
                       controller: _controller,
                       decoration: InputDecoration(
                         hintText: "Digite sua mensagem...",
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: const Color(0xFFF5F7FA),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
@@ -251,10 +257,11 @@ class _MensagensPageState extends State<MensagensPage> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: const BoxDecoration(
-                        color: Colors.blue,
+                        color: Color(0xFF1E88E5),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.send, color: Colors.white, size: 20),
+                      child: const Icon(Icons.send,
+                          color: Colors.white, size: 20),
                     ),
                   ),
                 ],

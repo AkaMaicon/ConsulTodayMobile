@@ -88,7 +88,8 @@ class _HomePageLoggedState extends State<HomePageLogged> {
         proximaConsulta: proximaConsulta,
         carregandoConsulta: carregandoConsulta,
       ),
-      HistoricoPage(),
+      
+      const AgendamentoPage(),
       const AgendamentosPage(),
       const MensagensPage(conversa: {}),
       PerfilPage(),
@@ -103,6 +104,7 @@ class _HomePageLoggedState extends State<HomePageLogged> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Início"),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: "Consultas"),
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "Agendamentos"),
           BottomNavigationBarItem(icon: Icon(Icons.message), label: "Mensagens"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),

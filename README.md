@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License" />
 </p>
 
-> **ConsulToday** é uma solução mobile moderna desenvolvida em Flutter para [descreva aqui o propósito principal, ex: facilitar o agendamento de consultas e gestão de horários em tempo real].
+> **ConsulToday** é uma solução mobile moderna desenvolvida em Flutter para facilitar o agendamento de consultas e gestão de horários em tempo real.
 
 ---
 

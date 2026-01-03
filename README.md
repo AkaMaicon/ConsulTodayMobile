@@ -25,7 +25,7 @@
 
 ## 📝 Sobre o Projeto
 
-O **ConsulToday Mobile** nasceu da necessidade de [explicar o problema que o app resolve]. O objetivo é oferecer uma experiência fluida tanto para [pacientes/clientes] quanto para [profissionais/administradores].
+O **ConsulToday Mobile** nasceu da necessidade de agendar consultas médicas de um jeito rápido e prático. O objetivo é oferecer uma experiência fluida tanto para pacientes quanto para profissionais.
 
 ---
 

@@ -86,4 +86,3 @@ lib/
  ├── modules/       # Telas e Lógica separadas por módulos
  ├── shared/        # Widgets e temas compartilhados
  └── main.dart      # Ponto de entrada
-  

@@ -52,18 +52,6 @@ Este projeto foi construído com as melhores tecnologias do ecossistema Flutter:
 
 ---
 
-## 📸 Protótipo e Telas
-
-<p align="center">
-  <img src="https://via.placeholder.com/200x400?text=Login+Screen" width="200" />
-  <img src="https://via.placeholder.com/200x400?text=Home+Screen" width="200" />
-  <img src="https://via.placeholder.com/200x400?text=Details+Screen" width="200" />
-</p>
-
-> *Dica: Substitua os links acima por imagens reais da pasta `assets/` ou links do Imgur.*
-
----
-
 ## 🛠️ Como Executar
 
 ### Pré-requisitos

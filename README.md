@@ -29,26 +29,26 @@ O **ConsulToday Mobile** nasceu da necessidade de [explicar o problema que o app
 
 ---
 
-## ✨ Funcionalidades
+## 🚀 Tecnologias e Dependências
 
-- [ ] **Autenticação:** Login seguro via [Firebase/API Própria].
-- [ ] **Dashboard:** Visualização rápida de [consultas do dia/estatísticas].
-- [ ] **Agendamento:** Sistema de marcação de horários intuitivo.
-- [ ] **Notificações:** Alertas Push para lembretes de horários.
-- [ ] **Perfil:** Gestão de dados do usuário e preferências.
-- [ ] **Modo Dark/Light:** Interface adaptável ao sistema.
+Com base no ecossistema Flutter utilizado neste projeto, as principais bibliotecas e ferramentas são:
+
+- **[Flutter](https://flutter.dev/):** Framework principal.
+- **Gerenciamento de Estado:** [Coloque aqui: ex: Flutter Bloc, Provider ou GetX]
+- **Comunicação com API:** [Coloque aqui: ex: Dio ou Http]
+- **Persistência de Dados:** [Coloque aqui: ex: Hive, Sqflite ou Shared Preferences]
+- **Injeção de Dependência:** [Coloque aqui: ex: GetIt ou Injectable]
+- **Estilização & UI:** [Coloque aqui: ex: Google Fonts, Font Awesome]
 
 ---
 
-## 🚀 Tecnologias Utilizadas
+## ✨ Funcionalidades Principais
 
-Este projeto foi construído com as melhores tecnologias do ecossistema Flutter:
-
-- **[Flutter](https://flutter.dev/):** Framework UI para desenvolvimento cross-platform.
-- **Gerenciamento de Estado:** [Ex: Provider / Bloc / GetX]
-- **Requisições HTTP:** [Ex: Dio / Http]
-- **Banco de Dados Local:** [Ex: Hive / Sqflite]
-- **Injeção de Dependência:** [Ex: GetIt]
+- [ ] **Autenticação:** Login e cadastro de usuários.
+- [ ] **Agendamento:** Interface para marcação de horários/consultas.
+- [ ] **Dashboard:** Visão geral das atividades do usuário.
+- [ ] **Notificações:** Alertas push sobre atualizações de consultas.
+- [ ] **Perfil:** Gerenciamento de informações pessoais e configurações.
 
 ---
 

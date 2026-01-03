@@ -1,78 +1,101 @@
-# 📱 ConsulTodayMobile
+# ConsulToday Mobile 📱
 
-![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
-![Dart](https://img.shields.io/badge/Dart-3.x-blue?logo=dart)
-![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green)
-![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow)
+<p align="center">
+  <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
+  <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Dart" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License" />
+</p>
 
-> **ConsulTodayMobile** é um aplicativo mobile desenvolvido em **Flutter**, parte do ecossistema **ConsulToday**, focado em oferecer uma experiência moderna e eficiente para gerenciamento e consulta de informações por meio de uma interface intuitiva e multiplataforma.
+> **ConsulToday** é uma solução mobile moderna desenvolvida em Flutter para [descreva aqui o propósito principal, ex: facilitar o agendamento de consultas e gestão de horários em tempo real].
 
 ---
 
-## 📑 Sumário
+## 📑 Índice
 
 - [Sobre o Projeto](#-sobre-o-projeto)
 - [Funcionalidades](#-funcionalidades)
 - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [Como Executar o Projeto](#-como-executar-o-projeto)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Screenshots](#-screenshots)
+- [Protótipo e Telas](#-protótipo-e-telas)
+- [Como Executar](#-como-executar)
+- [Estrutura de Pastas](#-estrutura-de-pastas)
 - [Contribuição](#-contribuição)
 - [Licença](#-licença)
-- [Autor](#-autor)
 
 ---
 
-## 📌 Sobre o Projeto
+## 📝 Sobre o Projeto
 
-O **ConsulTodayMobile** é a aplicação mobile do projeto **ConsulToday**, desenvolvida com **Flutter**, permitindo que usuários tenham acesso rápido e prático às funcionalidades do sistema diretamente pelo celular.
-
-🎯 Objetivos principais:
-- Oferecer uma interface moderna e consistente
-- Garantir compatibilidade com Android e iOS
-- Consumir dados de uma API externa
-- Facilitar a navegação e a usabilidade
+O **ConsulToday Mobile** nasceu da necessidade de [explicar o problema que o app resolve]. O objetivo é oferecer uma experiência fluida tanto para [pacientes/clientes] quanto para [profissionais/administradores].
 
 ---
 
 ## ✨ Funcionalidades
 
-- 🔐 Autenticação de usuários
-- 📋 Visualização de dados e informações
-- 📆 Agendamentos e histórico
-- 💬 Mensagens e notificações
-- 👤 Gerenciamento de perfil
-- 🎨 Interface padronizada e responsiva
-
-> *As funcionalidades podem evoluir conforme o projeto avança.*
+- [ ] **Autenticação:** Login seguro via [Firebase/API Própria].
+- [ ] **Dashboard:** Visualização rápida de [consultas do dia/estatísticas].
+- [ ] **Agendamento:** Sistema de marcação de horários intuitivo.
+- [ ] **Notificações:** Alertas Push para lembretes de horários.
+- [ ] **Perfil:** Gestão de dados do usuário e preferências.
+- [ ] **Modo Dark/Light:** Interface adaptável ao sistema.
 
 ---
 
-## 🛠 Tecnologias Utilizadas
+## 🚀 Tecnologias Utilizadas
 
-- **Flutter** — Framework para desenvolvimento mobile multiplataforma
-- **Dart** — Linguagem de programação
-- **REST API** — Integração com backend
-- **Shared Preferences** — Armazenamento local
-- **Material Design** — Padrão visual
+Este projeto foi construído com as melhores tecnologias do ecossistema Flutter:
 
----
-
-## 🚀 Como Executar o Projeto
-
-### 📋 Pré-requisitos
-
-Antes de começar, você precisa ter instalado:
-
-- [Flutter SDK](https://docs.flutter.dev/get-started/install)
-- Android Studio ou VS Code
-- Emulador Android ou dispositivo físico
+- **[Flutter](https://flutter.dev/):** Framework UI para desenvolvimento cross-platform.
+- **Gerenciamento de Estado:** [Ex: Provider / Bloc / GetX]
+- **Requisições HTTP:** [Ex: Dio / Http]
+- **Banco de Dados Local:** [Ex: Hive / Sqflite]
+- **Injeção de Dependência:** [Ex: GetIt]
 
 ---
 
-### ▶️ Passo a passo
+## 📸 Protótipo e Telas
 
-1. Clone o repositório:
+<p align="center">
+  <img src="https://via.placeholder.com/200x400?text=Login+Screen" width="200" />
+  <img src="https://via.placeholder.com/200x400?text=Home+Screen" width="200" />
+  <img src="https://via.placeholder.com/200x400?text=Details+Screen" width="200" />
+</p>
 
-```bash
-git clone https://github.com/AkaMaicon/ConsulTodayMobile.git
+> *Dica: Substitua os links acima por imagens reais da pasta `assets/` ou links do Imgur.*
+
+---
+
+## 🛠️ Como Executar
+
+### Pré-requisitos
+- Flutter SDK instalado (versão estável).
+- Um emulador (Android/iOS) ou dispositivo físico conectado.
+- Dart SDK.
+
+### Passo a passo
+
+1. **Clone o repositório:**
+   ```bash
+   git clone [https://github.com/AkaMaicon/ConsulTodayMobile.git](https://github.com/AkaMaicon/ConsulTodayMobile.git)
+   
+2. **Entre na pasta do projeto:**
+   ```bash
+   cd ConsulTodayMobile
+3. **Instale as dependências:**
+   ```bash
+   flutter pub get
+4. **Execute o app:**
+   ```bash
+   flutter run
+
+---
+
+## 📁 Estrutura de Pastas
+
+lib/
+ ├── core/          # Componentes globais e utilitários
+ ├── data/          # Repositórios e Data Sources (API)
+ ├── domain/        # Modelos e Entidades de Negócio
+ ├── modules/       # Telas e Lógica separadas por módulos
+ ├── shared/        # Widgets e temas compartilhados
+ └── main.dart      # Ponto de entrada
+  

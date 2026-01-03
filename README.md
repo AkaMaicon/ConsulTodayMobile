@@ -74,15 +74,3 @@ Este projeto foi construído com as melhores tecnologias do ecossistema Flutter:
 4. **Execute o app:**
    ```bash
    flutter run
-
----
-
-## 📁 Estrutura de Pastas
-
-lib/
- ├── core/          # Componentes globais e utilitários
- ├── data/          # Repositórios e Data Sources (API)
- ├── domain/        # Modelos e Entidades de Negócio
- ├── modules/       # Telas e Lógica separadas por módulos
- ├── shared/        # Widgets e temas compartilhados
- └── main.dart      # Ponto de entrada

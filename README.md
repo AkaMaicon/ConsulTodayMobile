@@ -29,26 +29,24 @@ O **ConsulToday Mobile** nasceu da necessidade de [explicar o problema que o app
 
 ---
 
-## 🚀 Tecnologias e Dependências
+## ✨ Funcionalidades
 
-Com base no ecossistema Flutter utilizado neste projeto, as principais bibliotecas e ferramentas são:
-
-- **[Flutter](https://flutter.dev/):** Framework principal.
-- **Gerenciamento de Estado:** [Coloque aqui: ex: Flutter Bloc, Provider ou GetX]
-- **Comunicação com API:** [Coloque aqui: ex: Dio ou Http]
-- **Persistência de Dados:** [Coloque aqui: ex: Hive, Sqflite ou Shared Preferences]
-- **Injeção de Dependência:** [Coloque aqui: ex: GetIt ou Injectable]
-- **Estilização & UI:** [Coloque aqui: ex: Google Fonts, Font Awesome]
+- 🔐 Autenticação de usuários
+- 📋 Visualização de informações
+- 📆 Agendamentos e histórico
+- 💬 Sistema de mensagens
+- 👤 Gerenciamento de perfil
+- 🎨 Interface padronizada e responsiva
 
 ---
 
-## ✨ Funcionalidades Principais
+## 🛠 Tecnologias Utilizadas
 
-- [ ] **Autenticação:** Login e cadastro de usuários.
-- [ ] **Agendamento:** Interface para marcação de horários/consultas.
-- [ ] **Dashboard:** Visão geral das atividades do usuário.
-- [ ] **Notificações:** Alertas push sobre atualizações de consultas.
-- [ ] **Perfil:** Gerenciamento de informações pessoais e configurações.
+- Flutter
+- Dart
+- REST API
+- Shared Preferences
+- Material Design
 
 ---
 
